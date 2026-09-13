@@ -6,8 +6,8 @@
 
 [![Code Style: Blue](https://img.shields.io/badge/blue%20style%20-%20blue-4495d1.svg)](https://github.com/JuliaDiff/BlueStyle)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
-[![jet](https://img.shields.io/badge/%F0%9F%9B%A9%EF%B8%8F_tested_with-JET.jl-233f9a)](https://github.com/aviatesk/JET.jl)
-[![DispatchDoctor](https://img.shields.io/badge/%F0%9F%A9%BA_tested_with-DispatchDoctor.jl-blue?labelColor=white)](https://github.com/MilesCranmer/DispatchDoctor.jl)
+[![jet](https://img.shields.io/badge/%F0%9F%9B%A9%EF%B8%8F_tested_with_JET.jl-233f9a)](https://github.com/aviatesk/JET.jl)
+[![DispatchDoctor](https://img.shields.io/badge/%F0%9F%A9%BA_tested_with_DispatchDoctor.jl-blue?labelColor=white)](https://github.com/MilesCranmer/DispatchDoctor.jl)
 
 GraphCombinations.jl generates non-isomorphic multigraph topologies for a prescribed set of vertex degrees, with Feynman-diagram generation as the primary use case.
 
@@ -22,5 +22,26 @@ graphs = allgraphs([2, 0, 0, 2])
 `allgraphs` returns `(edges, S)` pairs, where `edges` is a canonical `Vector{Pair{Int,Int}}` representation and `S::BigInt` is the exact symmetry denominator of the topology.
 
 The production generator enumerates degree-constrained multigraphs directly instead of first constructing all Wick pairings. It uses a hybrid exact reduction strategy: low-redundancy inputs canonicalize completed graphs directly, while larger internal relabeling sectors quotient isomorphic partial states at completed multiplicity-row boundaries. Public representatives, result ordering, and symmetry denominators remain deterministic and exact. A brute-force Wick implementation is retained internally as a small-system correctness oracle.
+
+## Weighted colored-port generation
+
+For downstream diagram engines that need directed, typed half-edge matching rather than scalar degree sequences, `ColoredPortProblem` provides an exact weighted colored-port generator.
+
+```julia
+problem = ColoredPortProblem(
+    fill(1, 3),
+    ones(Int, 3, 1),
+    ones(Int, 3, 1),
+    trues(1, 1),
+)
+
+completions = generate_weighted(problem)
+```
+
+Rows of the source/target count matrices are vertices and columns are opaque port colors. The pair-local admissibility relation may depend on both endpoint vertices and endpoint colors. Exact matching multiplicities are accumulated as `BigInt`, while fixed external vertices and admissibility-preserving relabelings are respected during partial-state quotienting.
+
+`generate_weighted_with_stats` additionally reports search-state, canonicalization, merge and pruning counters. A concrete pruning policy may be supplied when rejection is invariant under canonical relabeling and monotone under extension.
+
+Signed or graded downstream representations can extend `initial_port_weight` and `transport_port_weight` for their own concrete transport type. The transport receives a `PortRelabeling` that maps each accepted raw child into its canonical representative **before** orbit-equivalent contributions are accumulated. GraphCombinations provides only the domain-neutral relabeling; interpretation of any sign or representation factor remains the caller's responsibility.
 
 The package is heavily inspired by [this Mathematica StackExchange post](https://mathematica.stackexchange.com/questions/170268/how-to-generate-all-feynman-diagrams-with-mathematica) by AccidentalFourierTransform. A Mathematica notebook based on that approach is available in the [examples folder](https://github.com/oameye/GraphCombinations.jl/tree/main/examples).

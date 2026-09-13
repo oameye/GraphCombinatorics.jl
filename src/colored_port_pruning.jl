@@ -24,15 +24,26 @@ GraphCombinations backend does not assign any domain-specific meaning to the pre
 function _weighted_port_matchings_pruned_with_stats(
     problem::_PortMatchingProblem, keep_child::F
 )::Tuple{Vector{Tuple{Vector{_PortEdge},BigInt}},_PrunedPortGenerationStats} where {F}
+    return _weighted_port_matchings_pruned_with_stats(
+        problem, keep_child, _MultiplicityPortTransport()
+    )
+end
+
+function _weighted_port_matchings_pruned_with_stats(
+    problem::_PortMatchingProblem, keep_child::F, transport::T
+)::Tuple{Vector{Tuple{Vector{_PortEdge},BigInt}},_PrunedPortGenerationStats} where {F,T}
     automorphisms = _port_automorphisms(problem)
     initial = _PortMatchingState(
         _PortEdge[], copy(problem.source_ports), copy(problem.target_ports)
     )
     workspace = _PortCanonicalizationWorkspace(initial)
-    initial_key, initial_state, _ = _canonicalize_port_state(
+    initial_key, initial_state, initial_mapping = _canonicalize_port_state(
         initial, automorphisms, workspace
     )
-    states = Dict(initial_key => _WeightedPortState(initial_state, big(1)))
+    initial_weight = _initial_port_weight(
+        transport, initial, initial_state, initial_mapping
+    )
+    states = Dict(initial_key => _WeightedPortState(initial_state, initial_weight))
     layer_states = Int[1]
     transitions = 0
     canonicalization_calls = 1
@@ -75,11 +86,13 @@ function _weighted_port_matchings_pruned_with_stats(
                         continue
                     end
 
-                    key, canonical, _ = _canonicalize_port_state(
+                    key, canonical, mapping = _canonicalize_port_state(
                         child, automorphisms, workspace
                     )
                     canonicalization_calls += 1
-                    child_weight = weighted.weight * multiplicity
+                    child_weight = _transport_port_weight(
+                        transport, weighted.weight, multiplicity, child, canonical, mapping
+                    )
                     merged_transitions += Int(
                         _accumulate_port_state!(next_states, key, canonical, child_weight)
                     )
@@ -107,7 +120,7 @@ function _weighted_port_matchings_pruned_with_stats(
     for weighted in values(states)
         iszero(sum(weighted.state.target_ports)) ||
             error("Internal error: unmatched target ports remain at completion.")
-        push!(results, (weighted.state.edges, weighted.weight))
+        iszero(weighted.weight) || push!(results, (weighted.state.edges, weighted.weight))
     end
     sort!(results; lt=(a, b) -> _lexless_port_edges(first(a), first(b)))
     stats = _PrunedPortGenerationStats(

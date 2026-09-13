@@ -1,6 +1,6 @@
 import GraphCombinations as GC
 
-function colored_port_problem(order::Int)
+function colored_port_data(order::Int)
     num_vertices = order + 2
     vertex_colors = vcat([1, 2], fill(3, order))
     source_ports = zeros(Int, num_vertices, 1)
@@ -14,7 +14,19 @@ function colored_port_problem(order::Int)
 
     compatibility = trues(num_vertices, 1, num_vertices, 1)
     compatibility[1, 1, 2, 1] = false
+    return vertex_colors, source_ports, target_ports, compatibility
+end
+
+function colored_port_problem(order::Int)
+    vertex_colors, source_ports, target_ports, compatibility = colored_port_data(order)
     return GC._PortMatchingProblem(
+        vertex_colors, source_ports, target_ports, compatibility, 2
+    )
+end
+
+function public_colored_port_problem(order::Int)
+    vertex_colors, source_ports, target_ports, compatibility = colored_port_data(order)
+    return GC.ColoredPortProblem(
         vertex_colors, source_ports, target_ports, compatibility, 2
     )
 end
@@ -22,12 +34,16 @@ end
 function colored_port_generation!(SUITE)
     order4 = colored_port_problem(4)
     order5 = colored_port_problem(5)
+    public_order4 = public_colored_port_problem(4)
 
     SUITE["Colored port generation"]["order 4"] = @benchmarkable GC._weighted_port_matchings(
         $order4
     ) seconds = 5
     SUITE["Colored port generation"]["order 5"] = @benchmarkable GC._weighted_port_matchings(
         $order5
+    ) seconds = 5
+    SUITE["Colored port generation"]["order 4 public"] = @benchmarkable GC.generate_weighted(
+        $public_order4
     ) seconds = 5
 
     return nothing

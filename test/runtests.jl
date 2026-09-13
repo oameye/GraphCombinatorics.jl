@@ -61,6 +61,10 @@ end
     include("colored_port_pruning.jl")
 end
 
+@testset "colored port public API" begin
+    include("colored_port_api.jl")
+end
+
 @testset "phi-four" begin
     include("phi-four.jl")
 end
