@@ -90,7 +90,7 @@ function _PortMatchingProblem(
     target_ports::AbstractMatrix{<:Integer},
     compatibility::AbstractMatrix{Bool},
     num_fixed::Integer=0,
-)
+)::_PortMatchingProblem
     num_vertices = length(vertex_colors)
     num_source_colors = size(source_ports, 2)
     num_target_colors = size(target_ports, 2)
