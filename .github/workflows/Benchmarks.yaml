@@ -1,4 +1,5 @@
 name: Benchmark Tracking
+# Temporary runner-control trigger: no benchmark semantics changed.
 on:
   push:
     branches:
