@@ -1,3 +1,6 @@
+using Preferences: set_preferences!
+set_preferences!("GraphCombinations", "dispatch_doctor_mode" => "error")
+
 using Test, GraphCombinations
 
 @testset "Code linting" begin
