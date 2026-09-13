@@ -13,7 +13,7 @@ Depth = 2:3
 GraphCombinations
 ```
 
-## Public
+## Scalar graph generation
 
 ```@docs
 allgraphs
@@ -21,6 +21,41 @@ build_graph
 combinatoric_factor
 total_degree
 canonical_form
+```
+
+## Weighted colored-port generation
+
+### Types
+
+```@docs
+ColoredPortEdge
+ColoredPortProblem
+ColoredPortState
+PortRelabeling
+WeightedPortCompletion
+PortGenerationStats
+AcceptAllPortPolicy
+MultiplicityPortTransport
+```
+
+### Generation and state inspection
+
+```@docs
+generate_weighted
+generate_weighted_with_stats
+generation_statistics
+canonical_relabeling
+relabel_port_state
+port_edges
+source_port_counts
+target_port_counts
+```
+
+### Custom weight transport
+
+```@docs
+initial_port_weight
+transport_port_weight
 ```
 
 ## Private

@@ -23,4 +23,25 @@ graphs = allgraphs([2, 0, 0, 2])
 
 The production generator enumerates degree-constrained multigraphs directly instead of first constructing all Wick pairings. It uses a hybrid exact reduction strategy: low-redundancy inputs canonicalize completed graphs directly, while larger internal relabeling sectors quotient isomorphic partial states at completed multiplicity-row boundaries. Public representatives, result ordering, and symmetry denominators remain deterministic and exact. A brute-force Wick implementation is retained internally as a small-system correctness oracle.
 
+## Weighted colored-port generation
+
+For downstream diagram engines that need directed, typed half-edge matching rather than scalar degree sequences, `ColoredPortProblem` provides an exact weighted colored-port generator.
+
+```julia
+problem = ColoredPortProblem(
+    fill(1, 3),
+    ones(Int, 3, 1),
+    ones(Int, 3, 1),
+    trues(1, 1),
+)
+
+completions = generate_weighted(problem)
+```
+
+Rows of the source/target count matrices are vertices and columns are opaque port colors. The admissibility relation may be either a port-color compatibility matrix or a full pair-local relation depending on both endpoint vertices and colors. Exact matching multiplicities are accumulated as `BigInt`, while fixed external vertices and admissibility-preserving relabelings are respected during partial-state quotienting.
+
+`generate_weighted_with_stats` additionally reports traversal statistics. Consumer-defined pruning policies may reject only states whose invalidity is invariant under canonical relabeling and monotone under extension.
+
+Signed or graded consumers can extend `initial_port_weight` and `transport_port_weight` for their own concrete transport type. The transport receives a deterministic `PortRelabeling` before orbit-equivalent contributions are accumulated; GraphCombinations remains agnostic about the physical or algebraic meaning of any resulting sign.
+
 The package is heavily inspired by [this Mathematica StackExchange post](https://mathematica.stackexchange.com/questions/170268/how-to-generate-all-feynman-diagrams-with-mathematica) by AccidentalFourierTransform. A Mathematica notebook based on that approach is available in the [examples folder](https://github.com/oameye/GraphCombinations.jl/tree/main/examples).
