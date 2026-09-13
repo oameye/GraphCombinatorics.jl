@@ -142,7 +142,7 @@ end
 
 function _lexless_port_edges(a::Vector{_PortEdge}, b::Vector{_PortEdge})::Bool
     @inbounds for i in eachindex(a, b)
-        isequal(a[i], b.edges) && continue
+        isequal(a[i], b[i]) && continue
         return isless(a[i], b[i])
     end
     return length(a) < length(b)
