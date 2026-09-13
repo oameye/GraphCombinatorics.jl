@@ -2,8 +2,7 @@ using Preferences: set_preferences!
 
 const STATIC_ANALYSIS = "static" in ARGS
 set_preferences!(
-    "GraphCombinations",
-    "dispatch_doctor_mode" => (STATIC_ANALYSIS ? "disable" : "error"),
+    "GraphCombinations", "dispatch_doctor_mode" => (STATIC_ANALYSIS ? "disable" : "error")
 )
 
 using Test, GraphCombinations
