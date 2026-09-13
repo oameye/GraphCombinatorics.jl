@@ -3,12 +3,11 @@ set_preferences!("GraphCombinations", "dispatch_doctor_mode" => "error")
 
 using Test, GraphCombinations
 
-@testset "Code linting" begin
-    using JET
-    if VERSION >= v"1.12"
-        JET.test_package(GraphCombinations; target_modules=(GraphCombinations,))
-    else
-        JET.test_package(GraphCombinations; target_defined_modules=true)
+@static if VERSION >= v"1.12"
+    @testset "Code linting" begin
+        using JET
+        report = JET.report_package(GraphCombinations; target_modules=(GraphCombinations,))
+        @test isempty(JET.get_reports(report))
     end
 end
 
