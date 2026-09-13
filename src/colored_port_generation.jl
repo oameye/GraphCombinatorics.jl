@@ -142,7 +142,7 @@ end
 
 function _lexless_port_edges(a::Vector{_PortEdge}, b::Vector{_PortEdge})::Bool
     @inbounds for i in eachindex(a, b)
-        isequal(a[i], b[i]) && continue
+        isequal(a[i], b.edges) && continue
         return isless(a[i], b[i])
     end
     return length(a) < length(b)
@@ -479,8 +479,7 @@ function _weighted_port_matchings_with_stats(
         for weighted in values(states)
             state = weighted.state
             source_found, source_vertex, source_color = _first_remaining_source(state)
-            source_found ||
-                error("Internal error: port-matching layers are inconsistent.")
+            source_found || error("Internal error: port-matching layers are inconsistent.")
 
             @inbounds for target_vertex in axes(state.target_ports, 1)
                 for target_color in axes(state.target_ports, 2)
