@@ -1,5 +1,47 @@
 # Release notes
 
+## v0.3.0
+
+GraphCombinations v0.3.0 adds the production weighted colored-port backend and freezes a public downstream integration boundary for diagram engines that require directed, typed half-edge matching. The existing scalar `allgraphs` API and its exact graph semantics remain unchanged.
+
+### Weighted colored-port API
+
+The release adds the following public building blocks:
+
+- `ColoredPortProblem` for concrete directed colored-port matching problems;
+- `generate_weighted` and `generate_weighted_with_stats` for exact canonical weighted completions;
+- `PortGenerationStats` and `generation_statistics` for traversal diagnostics;
+- `ColoredPortState` plus state accessors for consumer policies;
+- deterministic `PortRelabeling` witnesses together with `canonical_relabeling` and `relabel_port_state`;
+- `AcceptAllPortPolicy` and a concrete policy interface for generic monotone pruning;
+- `MultiplicityPortTransport`, `initial_port_weight`, and `transport_port_weight` as the weight-transport extension point for signed or graded consumers.
+
+The API is additive. No v0.2 scalar public interface is removed or reinterpreted.
+
+### Exact search architecture
+
+Weighted generation uses residual source/target port counts to remove ordering redundancy of indistinguishable port occurrences. When the pair-local admissibility relation has a nontrivial admissibility-preserving vertex automorphism group, partial states are additionally quotiented under that group. Fixed external vertices remain fixed, and exact labelled multiplicities are accumulated as `BigInt`.
+
+A consumer pruning policy may reject a child before canonicalization only when rejection is invariant under the same admissibility-preserving relabelings and monotone under extension. The default `AcceptAllPortPolicy` selects the ordinary unpruned traversal exactly.
+
+### Relabeling and signed consumers
+
+`PortRelabeling` is a domain-neutral witness from a raw state to its canonical representative. Custom weight transport runs after canonicalization but before orbit-equivalent contributions are accumulated. This allows a downstream package to transform its own signed or graded representation and permits exact cancellation of contributions without moving sign semantics into GraphCombinations itself.
+
+GraphCombinations does not define fermionic, Wick, Keldysh, causal, or other domain-specific rules. Those remain the responsibility of consuming packages.
+
+### Validation and performance evidence
+
+The weighted backend is tested against fully labelled brute-force matching oracles on small problems, including repeated ports, fixed external vertices, asymmetric pair-local admissibility, exact continuation-state merging, relabeling witnesses, pruning identity, and exact multiplicity conservation.
+
+A KeldyshContraction research adapter using only the public GC boundary reproduces the existing bosonic canonical-weight oracle for `γ`, `g²`, `γ²`, mixed `gγ`, `g³`, and `g⁴`. Representative warmed matcher measurements from that integration gave about 2.89x speedup at `g³` and 7.01x at `g⁴`, with allocation reductions of about 2.19x and 5.42x respectively. These downstream measurements are validation evidence, not performance guarantees for the public API.
+
+The public weighted path has dedicated benchmark coverage, and the release gate retains Julia LTS/current tests, documentation, formatting, spell checking, coverage, and benchmark tracking.
+
+### Compatibility
+
+v0.3.0 is an additive minor release. Existing users of scalar graph generation should not need code changes. Downstream consumers that require the new weighted colored-port API should depend on `GraphCombinations = "0.3"` rather than an unreleased `main` revision.
+
 ## v0.2.0
 
 GraphCombinations v0.2.0 is a substantial rewrite of the graph-generation and canonicalization core while preserving the compact `allgraphs(n)` interface and deterministic public graph representatives.
