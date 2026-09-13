@@ -86,7 +86,9 @@ function _enumerate_reduced_vertex!(
     stats::RowReductionStats,
 ) where {F}
     num_vertices = length(residual)
-    accepted, state = _accept_row_state!(graph, row, num_external, state_colors, seen, stats)
+    accepted, state = _accept_row_state!(
+        graph, row, num_external, state_colors, seen, stats
+    )
     accepted || return nothing
 
     if row > num_vertices
